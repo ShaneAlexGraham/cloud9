@@ -49,9 +49,12 @@ RUN echo "\n\n\n***** Upgrade system *****\n"                                   
 
 # Customization
 COPY files/  /
-RUN ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime  ; \
-    echo "America/Toronto" > /etc/timezone                     ; \
-    chmod 644 /etc/bash.bashrc                              ; \
+RUN ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime      ; \
+    echo "America/Toronto" > /etc/timezone                      ; \
+    nvm install 13                                              ; \
+    nvm alias default 13                                        ; \
+    nvm use 13                                                  ; \
+    chmod 644 /etc/bash.bashrc                                  ; \
     chmod u=rwX,g=,o= -R /workspace
 
     
