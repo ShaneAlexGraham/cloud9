@@ -1,4 +1,5 @@
 FROM debian:buster-slim
+COPY files/  /
 
 MAINTAINER Shane Graham <shane.alex.graham@gmail.com>
 
@@ -21,46 +22,73 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.docker.debug="docker run --rm --name cloud9 -it -p 80:80 shanealexgraham/cloud9:latest bash"	
 
 
+# Replace shell with bash so we can source files
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+# Set debconf to run non-interactively
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+
 # Installation
-RUN echo "\n\n\n***** Upgrade system *****\n"                                                                           && \
-    export DEBIAN_FRONTEND=noninteractive                                                                               && \
-    apt-get update && apt-get -y dist-upgrade tmux locales                                                              && \
-    sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen                                                                  && \
-    locale-gen                                                                                                          && \
-    echo "export LC_ALL=en_US.UTF-8" >> ~/.bashrc                                                                       && \
-    echo "export LANG=en_US.UTF-8" >> ~/.bashrc                                                                         && \
-    echo "export LANGUAGE=en_US.UTF-8" >> ~/.bashrc                                                                     && \
-    \
-    echo "\n\n\n***** Install some packages for Cloud9 *****\n"                                                         && \
-    apt-get install -y --no-install-recommends nano git wget curl openssl ca-certificates build-essential python sshfs  && \                                                                          
-    apt-get install sudo -y                                                                                             && \
-    update-ca-certificates                                                                                              && \
-    \
-    echo "\n\n\n***** Install Cloud9 *****\n"                                                                           && \
-    git clone https://github.com/c9/core.git /cloud9                                                                    && \
-    cd /cloud9                                                                                                          && \
-    scripts/install-sdk.sh                                                                                              && \
-    \
-    echo "\n\n\n***** Make the NodeJS installed with Cloud9 available (WARNING: it is an old version) *****\n"          && \
-    ln -s /root/.c9/node/bin/node /usr/bin/node                                                                         && \
-    \
-    echo "\n\n\n***** Clean the packages *****\n"                                                                       && \
-    apt-get -y autoremove --purge python build-essential                                                                && \
-    apt-get -y autoclean                                                                                                && \
-    apt-get -y clean                                                                                                    && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*                                                                       && \
-    \
-    echo -e "\n\n\n*********************************************\n\n"
+RUN echo "\n\n\n***** Upgrade system *****\n"                                                                                  && \
+    apt-get update && apt-get -y dist-upgrade tmux locales                                                                     && \
+    sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen                                                                         && \
+    locale-gen                                                                              
+
+
+# Install base packages needed for later isntalls
+RUN echo "\n\n\n***** Install base packages *****\n"      
+RUN apt-get update && apt-get install -y -q --no-install-recommends \
+      nano \
+      openssl \
+      python \
+      sshfs \
+      apt-transport-https \
+      build-essential \
+      ca-certificates \
+      curl \
+      git \
+      libssl-dev \
+      sudo \
+      wget
+      
+RUN rm -rf /var/lib/apt/lists/* && update-ca-certificates;
+
+# Install nvm with node and npm
+Run echo "***** Install NVM *****" 
+ENV NVM_DIR "~/.nvm"
+ENV NODE_VERSION "13.2.0"
+
+RUN curl https://raw.githubusercontent.com/creationix/nvm/v0.20.0/install.sh | bash \
+    && . $NVM_DIR/nvm.sh \
+    && nvm ls-remote \
+    && chmod u=rwX,g=,o= -R $NVM_DIR 
+
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH      $NVM_DIR/v$NODE_VERSION/bin:$PATH     
+
+#Install Cloud9
+RUN echo "\n\n\n***** Install Cloud9 *****\n"                                                                                  && \
+    git clone https://github.com/c9/core.git /cloud9                                                                           && \
+    cd /cloud9                                                                                                                 && \
+    scripts/install-sdk.sh;
+    
+Run nvm install $NODE_VERSION \
+    && nvm alias default $NODE_VERSION \
+    && nvm use default;
+    
+Run echo "\n\n\n***** Clean the packages *****\n"  \
+    && apt-get -y autoremove --purge python build-essential  \
+    && apt-get -y autoclean  \
+    && apt-get -y clean  \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*;
+    
+Run echo -e "\n\n\n*********************************************\n\n"
 
 # Customization
-COPY files/  /
 RUN ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime      ; \
     echo "America/Toronto" > /etc/timezone                      ; \
-    nvm install 13                                              ; \
-    nvm alias default 13                                        ; \
-    nvm use 13                                                  ; \
     chmod 644 /etc/bash.bashrc                                  ; \
-    chmod u=rwX,g=,o= -R /workspace
+    chmod u=rwX,g=,o= -R /workspace                             ;
 
     
 EXPOSE 80
