@@ -47,17 +47,6 @@ RUN echo "\n\n\n***** Upgrade system *****\n"                                   
     \
     echo -e "\n\n\n*********************************************\n\n"
 
-    
-     echo "\n\n\n***** Install git-aware-prompt *****\n"                                                                 && \
-     git clone git://github.com/jimeh/git-aware-prompt.git /root/git-aware-prompt --depth=1                              && \
-     mkdir -p /root/bin                                                                                                  && \
-     mv /root/git-aware-prompt/colors.sh /root/bin                                                                       && \
-     mv /root/git-aware-prompt/prompt.sh /root/bin                                                                       && \
-     rm -rf /root/git-aware-prompt                                                                                       && \
-     chmod u=rwX,g=,o= -R /root                                                                                          && \
-     chmod u=rwx,g=,o= /root/bin/colors.sh /root/bin/prompt.sh                                                           && \
-     \
-
 # Customization
 COPY files/  /
 RUN ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime  ; \
