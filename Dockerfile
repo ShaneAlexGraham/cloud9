@@ -24,11 +24,16 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 # Installation
 RUN echo "\n\n\n***** Upgrade system *****\n"                                                                           && \
     export DEBIAN_FRONTEND=noninteractive                                                                               && \
-    apt-get update && apt-get -y dist-upgrade                                                                           && \
-    apt-get install sudo -y                                                                                             && \
+    apt-get update && apt-get -y dist-upgrade tmux locales                                                              && \
+    sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen                                                                  && \
+    locale-gen                                                                                                          && \
+    echo "export LC_ALL=en_US.UTF-8" >> ~/.bashrc                                                                       && \
+    echo "export LANG=en_US.UTF-8" >> ~/.bashrc                                                                         && \
+    echo "export LANGUAGE=en_US.UTF-8" >> ~/.bashrc                                                                     && \
     \
     echo "\n\n\n***** Install some packages for Cloud9 *****\n"                                                         && \
-    apt-get install -y --no-install-recommends nano git wget curl openssl ca-certificates build-essential python sshfs  && \
+    apt-get install -y --no-install-recommends nano git wget curl openssl ca-certificates build-essential python sshfs  && \                                                                          
+    apt-get install sudo -y                                                                                             && \
     update-ca-certificates                                                                                              && \
     \
     echo "\n\n\n***** Install Cloud9 *****\n"                                                                           && \
