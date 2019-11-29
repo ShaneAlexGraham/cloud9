@@ -6,25 +6,25 @@ Docker image for Cloud9
 The server runs on port 80.
 
 ### Get it
-[Docker hub](https://hub.docker.com/r/aureliend/cloud9/)
+[Docker hub](https://hub.docker.com/r/shanealexgraham/cloud9/)
 
 ```bash
-docker pull aureliend/cloud9:latest
+docker pull shanealexgraham/cloud9:latest
 ```
 
 ### Run
 ```bash
-docker run --rm --name cloud9 -p 80:80 aureliend/cloud9:latest
+docker run --rm --name cloud9 -p 80:80 shanealexgraham/cloud9:latest
 ```
 
 ### Build
 ```bash
-docker build -t aureliend/cloud9:latest --compress . --build-arg BUILD_DATE="0000-00-00T00:00:00" --build-arg VCS_REF="TEST"
+docker build -t shanealexgraham/cloud9:latest --compress . --build-arg BUILD_DATE="0000-00-00T00:00:00" --build-arg VCS_REF="TEST"
 ```
 
 ### Customize server
 ```bash
-docker run --rm --name cloud9 -it -p 80:80 aureliend/cloud9:latest node /cloud9/server.js -p 80 -l 0.0.0.0 -w /workspace -a login:password
+docker run --rm --name cloud9 -it -p 80:80 shanealexgraham/cloud9:latest node /cloud9/server.js -p 80 -l 0.0.0.0 -w /workspace -a login:password
 ```
   
   
@@ -64,7 +64,7 @@ echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 
 ### Run with command line bash
 ```bat
-docker run --rm --name cloud9 -it -p 80:80 aureliend/cloud9:latest bash
+docker run --rm --name cloud9 -it -p 80:80 shanealexgraham/cloud9:latest bash
 ```
 
 To run the Cloud9 server:
