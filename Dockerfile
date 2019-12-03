@@ -14,7 +14,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.usage="https://github.com/ShaneAlexGraham/cloud9/blob/master/README.md" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.vcs-url="https://github.com/ShaneAlexGraham/cloud9" \
-      org.label-schema.vendor="Shane GRaham" \
+      org.label-schema.vendor="Shane Graham" \
       org.label-schema.version="1.0" \
       org.label-schema.schema-version="1.0" \
       org.label-schema.docker.cmd="docker run --rm --name cloud9 -p 80:80 shanealexgraham/cloud9:latest"	\
@@ -31,7 +31,9 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 
 # update the repository sources list
 # and install dependencies
-RUN apt-get update \
+RUN apt update -y \
+    && apt install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+    && apt-get update \
     && apt-get install -y curl tmux locales  \
     && apt-get -y autoclean
 
@@ -56,14 +58,15 @@ RUN rm -rf /var/lib/apt/lists/* && update-ca-certificates;
 RUN sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen
 RUN locale-gen
 
+# Install docker-compose
+RUN sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+RUN sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+RUN sudo apt update
+RUN sudo apt-cache policy docker-ce
+RUN sudo apt install docker-ce
+
 # Install nvm with node and npm
 Run echo "***** Install NVM *****" 
-
-
-# Install docker compose
-Run echo "***** Docker Compose *****" 
-Run curl -L "https://github.com/docker/compose/releases/download/1.25.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-Run chmod +x /usr/local/bin/docker-compose
 
 # nvm environment variables
 ENV NVM_DIR /usr/local/nvm
