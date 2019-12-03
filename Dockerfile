@@ -59,6 +59,12 @@ RUN locale-gen
 # Install nvm with node and npm
 Run echo "***** Install NVM *****" 
 
+
+# Install docker compose
+Run echo "***** Docker Compose *****" 
+Run curl -L "https://github.com/docker/compose/releases/download/1.25.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+Run chmod +x /usr/local/bin/docker-compose
+
 # nvm environment variables
 ENV NVM_DIR /usr/local/nvm
 ENV NODE_VERSION 13.2.0
