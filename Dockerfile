@@ -67,28 +67,34 @@ RUN sudo apt install docker-ce -y
 # Install nvm with node and npm
 Run echo "***** Install NVM *****" 
 
-# nvm environment variables
-ENV NVM_DIR /usr/local/nvm
-ENV NODE_VERSION 13.2.0
+# Add user "nvm" as non-root user
+RUN useradd -ms /bin/bash nvm
 
-# install nvm
-# https://github.com/creationix/nvm#install-script
-RUN curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.31.2/install.sh | bash
+RUN mkdir "home/nvm/.nvm"
+RUN mkdir "cloud9"
 
-# install node and npm
-RUN source $NVM_DIR/nvm.sh \
-    && nvm install $NODE_VERSION \
-    && nvm alias default $NODE_VERSION \
-    && nvm use default
+# Copy and set permission for nvm directory
+RUN chown nvm:nvm -R "home/nvm/.nvm"
+RUN chown nvm:nvm -R "cloud9"
 
-# add node and npm to path so the commands are available
-ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
-ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+RUN git clone https://github.com/nvm-sh/nvm.git /home/nvm/.nvm
 
+# Set sudoer for "nvm"
+RUN echo 'nvm ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 
-# confirm installation
-RUN node -v
-RUN npm -v
+# Switch to user "nvm" from now
+USER nvm
+
+# nvm
+RUN echo 'export NVM_DIR="$HOME/.nvm"'                                       >> "$HOME/.bashrc"
+RUN echo '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm' >> "$HOME/.bashrc"
+RUN echo '[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion" # This loads nvm bash_completion' >> "$HOME/.bashrc"
+
+# nodejs and tools
+RUN bash -c 'source $HOME/.nvm/nvm.sh   && \
+    nvm install node                    && \
+    npm install -g doctoc urchin eclint dockerfile_lint && \
+    npm install --prefix "$HOME/.nvm/"'
 
 #Install Cloud9
 RUN echo "\n\n\n***** Install Cloud9 *****\n"                                                                                  && \
@@ -97,18 +103,17 @@ RUN echo "\n\n\n***** Install Cloud9 *****\n"                                   
     scripts/install-sdk.sh;
     
 Run echo "\n\n\n***** Clean the packages *****\n"  \
-    && apt-get -y autoremove --purge python build-essential  \
-    && apt-get -y autoclean  \
-    && apt-get -y clean;
+    && sudo apt-get -y autoremove --purge python build-essential  \
+    && sudo apt-get -y autoclean  \
+    && sudo apt-get -y clean;
     
 Run echo -e "\n\n\n*********************************************\n\n"
 
 # Customization
-RUN ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime      ; \
-    echo "America/Toronto" > /etc/timezone                      ; \
-    chmod 644 /etc/bash.bashrc                                  ; \
-    chmod u=rwX,g=,o= -R /usr/local/nvm                         ; \
-    chmod u=rwX,g=,o= -R /workspace                             ;
+RUN sudo ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime      ; \
+    sudo echo "America/Toronto" > /etc/timezone                      ; \
+    sudo chmod 644 /etc/bash.bashrc                                  ; \
+    sudo chmod u=rwX,g=,o= -R /workspace                             ;
 
     
 EXPOSE 80
