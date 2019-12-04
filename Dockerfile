@@ -85,6 +85,7 @@ RUN source $NVM_DIR/nvm.sh \
 ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
 ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 
+
 # confirm installation
 RUN node -v
 RUN npm -v
@@ -106,6 +107,7 @@ Run echo -e "\n\n\n*********************************************\n\n"
 RUN ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime      ; \
     echo "America/Toronto" > /etc/timezone                      ; \
     chmod 644 /etc/bash.bashrc                                  ; \
+    chmod u=rwX,g=,o= -R /usr/local/nvm                         ; \
     chmod u=rwX,g=,o= -R /workspace                             ;
 
     
