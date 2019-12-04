@@ -32,11 +32,10 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 # update the repository sources list
 # and install dependencies
 RUN apt update -y \
-    && apt install apt-transport-https ca-certificates curl gnupg2 software-properties-common
-    && apt-get update \
+    && apt install apt-transport-https ca-certificates curl gnupg2 software-properties-common -y \
+    && apt-get update -y \
     && apt-get install -y curl tmux locales  \
     && apt-get -y autoclean
-
                                                                                 
 #Install base packages needed for later isntalls
 RUN echo "\n\n\n***** Install base packages *****\n"      
@@ -60,10 +59,10 @@ RUN locale-gen
 
 # Install docker-compose
 RUN sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-RUN sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
-RUN sudo apt update
-RUN sudo apt-cache policy docker-ce
-RUN sudo apt install docker-ce
+RUN sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" -y 
+RUN sudo apt update -y 
+RUN sudo apt-cache policy docker-ce 
+RUN sudo apt install docker-ce -y 
 
 # Install nvm with node and npm
 Run echo "***** Install NVM *****" 
