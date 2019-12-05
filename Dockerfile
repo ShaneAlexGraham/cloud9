@@ -67,23 +67,9 @@ RUN sudo apt install docker-ce -y
 # Install nvm with node and npm
 Run echo "***** Install NVM *****" 
 
-# Add user "nvm" as non-root user
-RUN useradd -ms /bin/bash nvm
-
-RUN mkdir "home/nvm/.nvm"
 RUN mkdir "cloud9"
 
-# Copy and set permission for nvm directory
-RUN chown nvm:nvm -R "home/nvm/.nvm"
-RUN chown nvm:nvm -R "cloud9"
-
-RUN git clone https://github.com/nvm-sh/nvm.git /home/nvm/.nvm
-
-# Set sudoer for "nvm"
-RUN echo 'nvm ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-
-# Switch to user "nvm" from now
-USER nvm
+RUN git clone https://github.com/nvm-sh/nvm.git /root/.nvm
 
 # nvm
 RUN echo 'export NVM_DIR="$HOME/.nvm"'                                       >> "$HOME/.bashrc"
