@@ -20,8 +20,3 @@
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
-
-export NVM_DIR=/usr/local/nvm
-export NODE_VERSION=13.2.0
-export NODE_PATH=$NVM_DIR/v$NODE_VERSION/lib/node_modules
-export PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH

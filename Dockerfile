@@ -67,20 +67,30 @@ RUN sudo apt install docker-ce -y
 # Install nvm with node and npm
 Run echo "***** Install NVM *****" 
 
-RUN mkdir "cloud9"
+# install nvm
+# https://github.com/creationix/nvm#install-script
 
-RUN git clone https://github.com/nvm-sh/nvm.git /root/.nvm
+# nvm environment variables
+ENV NVM_DIR /root/.nvm
+ENV NODE_VERSION 13.3.0
 
-# nvm
-RUN echo 'export NVM_DIR="$HOME/.nvm"'                                       >> "$HOME/.bashrc"
-RUN echo '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm' >> "$HOME/.bashrc"
-RUN echo '[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion" # This loads nvm bash_completion' >> "$HOME/.bashrc"
+RUN curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.31.2/install.sh | sudo bash
 
-# nodejs and tools
-RUN bash -c 'source $HOME/.nvm/nvm.sh   && \
+RUN ls /root/.nvm -a
+
+# install node and npm
+RUN sudo bash -c 'source $HOME/.nvm/nvm.sh   && \
     nvm install node                    && \
     npm install -g doctoc urchin eclint dockerfile_lint && \
     npm install --prefix "$HOME/.nvm/"'
+
+# add node and npm to path so the commands are available
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+# confirm installation
+RUN node -v
+RUN npm -v
 
 #Install Cloud9
 RUN echo "\n\n\n***** Install Cloud9 *****\n"                                                                                  && \
@@ -101,11 +111,11 @@ RUN sudo ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime      ; \
     sudo chmod 644 /etc/bash.bashrc                                  ; \
     sudo chmod u=rwX,g=,o= -R /workspace                             ;
 
-    
 EXPOSE 80
 VOLUME /workspace
 WORKDIR /cloud9
 
+RUN npm install serverless -g
 
 # The shell form of CMD is used here to be able to kill NodeJS with CTRL+C (see https://github.com/nodejs/node-v0.x-archive/issues/9131)
 CMD node /cloud9/server.js -p 80 -l 0.0.0.0 -w /workspace -a :
