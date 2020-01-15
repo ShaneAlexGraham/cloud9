@@ -78,6 +78,19 @@ RUN curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.31.2/i
 
 RUN ls /root/.nvm -a
 
+RUN bash -c ' \
+  set -eux && \
+  echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ jessie main" > /etc/apt/sources.list.d/dotnetdev.list && \
+  apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893 && \
+  apt-get -y update && \
+  apt-get -y install dotnet-dev-1.0.0-preview2-003121 && \
+  \
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
+  echo "deb http://download.mono-project.com/repo/debian/dists/buster/snapshots/6.8 main" | tee /etc/apt/sources.list.d/mono-xamarin.list && \
+  apt-get -y update && \
+  apt-get -y install curl g++ pkg-config libgdiplus libunwind8 libssl-dev make mono-complete gettext libssl-dev libcurl4-openssl-dev zlib1g libicu-dev uuid-dev unzip'
+
+
 # install node and npm
 RUN sudo bash -c 'source $HOME/.nvm/nvm.sh   && \
     nvm install node                    && \
@@ -87,10 +100,6 @@ RUN sudo bash -c 'source $HOME/.nvm/nvm.sh   && \
 # add node and npm to path so the commands are available
 ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
 ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
-
-# confirm installation
-RUN node -v
-RUN npm -v
 
 #Install Cloud9
 RUN echo "\n\n\n***** Install Cloud9 *****\n"                                                                                  && \
