@@ -29,6 +29,10 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 # Set debconf to run non-interactively
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
+RUN sudo apt install apt-transport-https dirmngr -y
+RUN sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+RUN echo "deb https://download.mono-project.com/repo/debian vs-buster main" | sudo tee /etc/apt/sources.list.d/mono-official-vs.list
+
 # update the repository sources list
 # and install dependencies
 RUN apt update -y \
@@ -36,7 +40,9 @@ RUN apt update -y \
     && apt-get update -y \
     && apt-get install -y curl tmux locales  \
     && apt-get -y autoclean
-                                                                                
+                               
+RUN sudo apt-get install monodevelop -y                         
+
 #Install base packages needed for later isntalls
 RUN echo "\n\n\n***** Install base packages *****\n"      
 RUN apt-get update && apt-get install -y -q --no-install-recommends \
@@ -77,12 +83,6 @@ ENV NODE_VERSION 13.3.0
 RUN curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.31.2/install.sh | sudo bash
 
 RUN ls /root/.nvm -a
-
-RUN bash -c ' \
-  echo "deb http://download.mono-project.com/repo/debian/dists/buster/snapshots/6.8 main" | tee /etc/apt/sources.list.d/mono-xamarin.list && \
-  apt-get -y update && \
-  apt-get -y install curl g++ pkg-config libgdiplus libunwind8 libssl-dev make mono-complete gettext libssl-dev libcurl4-openssl-dev zlib1g libicu-dev uuid-dev unzip'
-
 
 # install node and npm
 RUN sudo bash -c 'source $HOME/.nvm/nvm.sh   && \
