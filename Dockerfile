@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM ubuntu:18.04
 COPY files/  /
 
 MAINTAINER Shane Graham <shane.alex.graham@gmail.com>
@@ -26,22 +26,19 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 # replace shell with bash so we can source files
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-# Set debconf to run non-interactively
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-
-RUN sudo apt install apt-transport-https dirmngr -y
-RUN sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-RUN echo "deb https://download.mono-project.com/repo/debian vs-buster main" | sudo tee /etc/apt/sources.list.d/mono-official-vs.list
-
-# update the repository sources list
-# and install dependencies
 RUN apt update -y \
     && apt install apt-transport-https ca-certificates curl gnupg2 software-properties-common -y \
     && apt-get update -y \
     && apt-get install -y curl tmux locales  \
-    && apt-get -y autoclean
+    && apt-get -y autoclean \
+    && apt-get install sudo -y
                                
-RUN sudo apt-get install monodevelop -y                         
+RUN adduser --disabled-password --gecos '' docker
+RUN adduser docker sudo
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+RUN sudo apt install apt-transport-https dirmngr -y
+RUN sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 
 #Install base packages needed for later isntalls
 RUN echo "\n\n\n***** Install base packages *****\n"      
@@ -64,36 +61,33 @@ RUN sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen
 RUN locale-gen
 
 # Install docker-compose
-RUN sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-RUN sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" -y 
-RUN sudo apt update -y 
-RUN sudo apt-cache policy docker-ce 
-RUN sudo apt install docker-ce -y 
+RUN curl -fsSL https://get.docker.com -o get-docker.sh
+RUN sudo sh get-docker.sh
 
 # Install nvm with node and npm
 Run echo "***** Install NVM *****" 
 
 # install nvm
 # https://github.com/creationix/nvm#install-script
+RUN mkdir -p /usr/local/nvm
 
 # nvm environment variables
-ENV NVM_DIR /root/.nvm
+ENV NVM_DIR /usr/local/nvm
 ENV NODE_VERSION 13.3.0
 
-RUN curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.31.2/install.sh | sudo bash
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+ENV NVM_DIR /usr/local/nvm
 
-RUN ls /root/.nvm -a
+
+ENV NODE_PATH $NVM_DIR/lib/node_modules
+ENV PATH $NVM_DIR/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
 
 # install node and npm
-RUN sudo bash -c 'source $HOME/.nvm/nvm.sh   && \
-    nvm install node                    && \
-    npm install -g doctoc urchin eclint dockerfile_lint && \
-    npm install --prefix "$HOME/.nvm/"'
-
-# add node and npm to path so the commands are available
-ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
-ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
-
+RUN source $NVM_DIR/nvm.sh \
+   && nvm install $NODE_VERSION \
+   && nvm alias default $NODE_VERSION \
+   && nvm use default
+   
 #Install Cloud9
 RUN echo "\n\n\n***** Install Cloud9 *****\n"                                                                                  && \
     git clone https://github.com/c9/core.git /cloud9                                                                           && \
@@ -117,7 +111,8 @@ EXPOSE 80
 VOLUME /workspace
 WORKDIR /cloud9
 
-RUN npm install serverless -g
+RUN source $NVM_DIR/nvm.sh && nvm --version
+RUN source $NVM_DIR/nvm.sh && npm install typescript -g
 
 # The shell form of CMD is used here to be able to kill NodeJS with CTRL+C (see https://github.com/nodejs/node-v0.x-archive/issues/9131)
-CMD node /cloud9/server.js -p 80 -l 0.0.0.0 -w /workspace -a :
+CMD source $NVM_DIR/nvm.sh && node /cloud9/server.js -p 80 -l 0.0.0.0 -w /workspace -a :
