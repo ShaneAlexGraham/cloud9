@@ -1,4 +1,5 @@
-FROM ubuntu:18.04
+FROM ubuntu:19.10
+
 COPY files/  /
 
 MAINTAINER Shane Graham <shane.alex.graham@gmail.com>
@@ -31,7 +32,7 @@ RUN apt update -y \
     && apt-get update -y \
     && apt-get install -y curl tmux locales  \
     && apt-get -y autoclean \
-    && apt-get install sudo -y
+    && apt-get install sudo snapd -y 
                                
 RUN adduser --disabled-password --gecos '' docker
 RUN adduser docker sudo
@@ -113,6 +114,8 @@ WORKDIR /cloud9
 
 RUN source $NVM_DIR/nvm.sh && nvm --version
 RUN source $NVM_DIR/nvm.sh && npm install typescript -g
+
+RUN sudo service docker start
 
 # The shell form of CMD is used here to be able to kill NodeJS with CTRL+C (see https://github.com/nodejs/node-v0.x-archive/issues/9131)
 CMD source $NVM_DIR/nvm.sh && node /cloud9/server.js -p 80 -l 0.0.0.0 -w /workspace -a :
